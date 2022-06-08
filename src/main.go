@@ -37,5 +37,6 @@ func main() {
 		MaxAge: 24 * time.Hour,
 	}))
 	r.GET("/ping", models.Ping)
+	r.POST("/makeData", models.PostCSV)
 	r.Run()
 }
