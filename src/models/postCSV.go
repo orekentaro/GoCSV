@@ -3,10 +3,9 @@ package models
 import (
 	"encoding/csv"
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
 )
 
 func PostCSV(c *gin.Context) {
@@ -22,15 +21,19 @@ func PostCSV(c *gin.Context) {
 		})
 	}
 
-	r := csv.NewReader(transform.NewReader(file, japanese.ShiftJIS.NewDecoder()))
+	var record string
+
+	r := csv.NewReader(file)
 	for {
-		records, err := r.Read()
+		row, err := r.Read()
 		if err != nil {
 			break
 		}
-		fmt.Println(records)
+		record += strings.Join(row, ",") + "\n"
 	}
-	c.JSON(200, gin.H{
-		"message": "connect",
-	})
+	fmt.Println(record)
+
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename=test.csv")
+	c.Writer.Header().Set("Content-Type", "text/csv")
+	c.Writer.Write([]byte(record))
 }
