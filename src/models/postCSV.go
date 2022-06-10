@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 func PostCSV(c *gin.Context) {
@@ -23,10 +25,9 @@ func PostCSV(c *gin.Context) {
 
 	var records string
 
-	r := csv.NewReader(file)
+	r := csv.NewReader(transform.NewReader(file, japanese.ShiftJIS.NewDecoder()))
 
 	csvHeader, err := r.Read()
-	// records += strings.Join(csvHeader, ",") + "\n"
 	if err != nil {
 		c.JSON(200, gin.H{
 			"message": err,
@@ -61,14 +62,14 @@ func PostCSV(c *gin.Context) {
 		records += strings.Join(recordsList, ",") + "\n"
 	}
 
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename=test.csv")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename=download.csv")
 	c.Writer.Header().Set("Content-Type", "text/csv")
 	c.Writer.Write([]byte(records))
 }
 
 func include(slice []string, target string) bool {
 	for _, value := range slice {
-		if value == target || "\ufeff"+value == target {
+		if value == target || "\ufeff"+value == target || "�ｿ"+value == target {
 			return true
 		}
 	}
